@@ -1,0 +1,158 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Page Pulse | Website Auditor</title>
+    <!-- SEO Meta Tags -->
+    <meta name="description" content="Audit any website URL instantly. Analyze response time, headings, meta descriptions, image alt tags, and word count using Page Pulse.">
+    <meta name="csrf-token" content="{{ csrf_token }}">
+    
+    <!-- Google Fonts - Inter & Outfit -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Custom Style Sheet -->
+    <link rel="stylesheet" href="{% static 'audit/css/style.css' %}">
+</head>
+<body>
+
+    <main class="app-container">
+        <!-- Header Section -->
+        <header class="app-header">
+            <div class="logo-area">
+                <div class="logo-pulse"></div>
+                <h1 class="app-title">Page Pulse</h1>
+            </div>
+            <p class="app-description">
+                Analyze and audit webpage structures, SEO factors, and speed metrics instantly. Enter a URL below to generate a performance report.
+            </p>
+        </header>
+
+        <!-- Search / Input Section -->
+        <section class="audit-input-section">
+            <form id="audit-form" class="audit-form" novalidate>
+                <div class="input-group">
+                    <span class="input-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                    </span>
+                    <input 
+                        type="url" 
+                        id="target-url" 
+                        placeholder="https://example.com" 
+                        required 
+                        autocomplete="off"
+                        aria-label="Website URL to audit"
+                    >
+                </div>
+                <button type="submit" id="submit-btn" class="submit-button">
+                    <span>Analyze URL</span>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+                </button>
+            </form>
+        </section>
+
+        <!-- Status Message / Error Banner -->
+        <section id="error-container" class="error-container hidden" aria-live="polite">
+            <div class="error-content">
+                <svg class="error-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+                <p id="error-message">An error occurred while auditing the page.</p>
+            </div>
+        </section>
+
+        <!-- Loading State Spinner -->
+        <section id="loading-container" class="loading-container hidden" aria-live="polite">
+            <div class="loading-spinner">
+                <div class="spinner-ring"></div>
+                <div class="spinner-ring-inner"></div>
+            </div>
+            <p class="loading-text">Crawling page and compiling SEO audit report...</p>
+        </section>
+
+        <!-- Result / Audit Report Section -->
+        <section id="report-container" class="report-container hidden" aria-live="polite">
+            <div class="report-header">
+                <h2 class="report-title">Audit Report</h2>
+                <div class="target-url-badge" id="report-badge-url">https://example.com</div>
+            </div>
+
+            <!-- Overview Section (Status & Load Time) -->
+            <div class="overview-grid">
+                <div class="overview-card status-card">
+                    <span class="card-label">HTTP Status</span>
+                    <div class="card-value" id="val-status">200</div>
+                    <span class="card-subtext" id="status-explanation">Successful Connection</span>
+                </div>
+                <div class="overview-card speed-card">
+                    <span class="card-label">Response Time</span>
+                    <div class="card-value" id="val-response-time">325 ms</div>
+                    <span class="card-subtext">Server Fetch Elapsed</span>
+                </div>
+            </div>
+
+            <!-- Detailed Grid Layout -->
+            <div class="details-grid">
+                <!-- Title Card -->
+                <div class="details-card span-cols">
+                    <div class="card-header-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
+                        <h3>Page Title</h3>
+                    </div>
+                    <p class="meta-content" id="val-title">No Title Available</p>
+                </div>
+
+                <!-- Meta Description Card -->
+                <div class="details-card span-cols">
+                    <div class="card-header-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+                        <h3>Meta Description</h3>
+                    </div>
+                    <p class="meta-content text-italic" id="val-description">No meta description found on this page.</p>
+                </div>
+
+                <!-- Numeric Metrics Grid -->
+                <div class="metric-block-card">
+                    <div class="metric-icon-wrap">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="9" x2="20" y2="9"></line><line x1="4" y1="15" x2="20" y2="15"></line><line x1="10" y1="3" x2="8" y2="21"></line><line x1="16" y1="3" x2="14" y2="21"></line></svg>
+                    </div>
+                    <div class="metric-info">
+                        <span class="metric-label">H1 Headings</span>
+                        <span class="metric-count" id="val-h1-count">0</span>
+                    </div>
+                </div>
+
+                <div class="metric-block-card">
+                    <div class="metric-icon-wrap">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
+                    </div>
+                    <div class="metric-info">
+                        <span class="metric-label">Images Missing Alt Text</span>
+                        <span class="metric-count" id="val-images-missing-alt">0</span>
+                    </div>
+                </div>
+
+                <div class="metric-block-card">
+                    <div class="metric-icon-wrap">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 1 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                    </div>
+                    <div class="metric-info">
+                        <span class="metric-label">Approximate Word Count</span>
+                        <span class="metric-count" id="val-word-count">0</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="app-footer">
+        <p>Built for Digital Heroes Training Task</p>
+        <p><a href="https://digitalheroesco.com" target="_blank" rel="noopener noreferrer" class="footer-link">Digital Heroes</a></p>
+    </footer>
+
+    <!-- Vanilla Javascript Logic -->
+    <script src="{% static 'audit/js/app.js' %}"></script>
+</body>
+</html>
