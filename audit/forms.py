@@ -1,5 +1,4 @@
 from django import forms
-from django.core.validators import URLValidator
 from django.core.exceptions import ValidationError
 
 class UrlAuditForm(forms.Form):

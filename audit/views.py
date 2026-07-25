@@ -6,7 +6,6 @@ from django.views.decorators.csrf import ensure_csrf_cookie
 
 from .services import (
     analyze_url,
-    AuditError,
     InvalidUrlError,
     TimeoutError,
     NonHtmlResponseError,
